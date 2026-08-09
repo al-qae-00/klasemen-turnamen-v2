@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Klasemen Turnamen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#080b14;
+    --panel:#0e1526;
+    --panel2:#121b32;
+    --line:rgba(255,255,255,0.08);
+    --blue:#1e3fae;
+    --blue-light:#2e56d9;
+    --gold:#f2b705;
+    --green:#2fd68f;
+    --red:#ef4867;
+    --text:#f3f5fa;
+    --muted:#8a94ac;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse 900px 500px at 8% -10%, rgba(46,86,217,0.35), transparent 60%),
+      radial-gradient(ellipse 900px 500px at 92% -10%, rgba(242,183,5,0.16), transparent 60%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Barlow',sans-serif;
+    min-height:100vh;
+    padding-bottom:60px;
+  }
+  .wrap{max-width:920px;margin:0 auto;padding:0 18px;}
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position:relative;
+    padding:38px 0 26px;
+    text-align:center;
+    overflow:hidden;
+  }
+  .lights{
+    position:absolute; top:-40px; left:0; right:0; height:160px;
+    pointer-events:none;
+  }
+  .beam{
+    position:absolute; width:2px; height:140px;
+    background:linear-gradient(to bottom, rgba(255,255,255,0.55), transparent);
+    transform-origin:top center;
+    animation:flicker 3.4s ease-in-out infinite;
+    filter:blur(0.3px);
+  }
+  @keyframes flicker{
+    0%,100%{opacity:.35}
+    50%{opacity:.9}
+  }
+  .eyebrow{
+    font-family:'Barlow Condensed',sans-serif;
+    letter-spacing:.28em;
+    text-transform:uppercase;
+    font-size:12px;
+    color:var(--gold);
+    font-weight:700;
+    margin-bottom:10px;
+  }
+  h1.title{
+    font-family:'Anton',sans-serif;
+    font-weight:400;
+    font-size:clamp(30px,7vw,52px);
+    letter-spacing:.01em;
+    margin:0;
+    line-height:1.02;
+    text-transform:uppercase;
+    background:linear-gradient(180deg,#ffffff 0%, #c9d4f4 100%);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    text-shadow:0 2px 30px rgba(46,86,217,0.35);
+  }
+  .title-edit{
+    background:transparent;border:none;color:inherit;font:inherit;
+    text-align:center;width:100%;outline:none;
+  }
+  .subtitle{color:var(--muted);font-size:14px;margin-top:8px;}
+  .updated{
+    margin-top:14px;display:inline-flex;align-items:center;gap:8px;
+    font-size:12px;color:var(--muted);
+    background:rgba(255,255,255,0.04);
+    border:1px solid var(--line);
+    padding:6px 14px;border-radius:999px;
+  }
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+  /* ---------- ADMIN BAR ---------- */
+  .adminbar{
+    display:flex; justify-content:flex-end; gap:8px; padding:14px 0 4px;
+  }
+  .btn{
+    font-family:'Barlow Condensed',sans-serif;
+    font-weight:600; letter-spacing:.03em; text-transform:uppercase;
+    font-size:13px; cursor:pointer; border:none; border-radius:8px;
+    padding:9px 16px; transition:transform .12s ease, background .15s ease;
+  }
+  .btn:active{transform:scale(0.96);}
+  .btn-ghost{background:rgba(255,255,255,0.06); color:var(--text); border:1px solid var(--line);}
+  .btn-ghost:hover{background:rgba(255,255,255,0.11);}
+  .btn-gold{background:var(--gold); color:#1a1400;}
+  .btn-blue{background:var(--blue-light); color:#fff;}
+  .btn-red{background:rgba(239,72,103,0.15); color:var(--red); border:1px solid rgba(239,72,103,0.4);}
+  .btn-sm{padding:6px 10px;font-size:11px;border-radius:6px;}
+
+  /* ---------- TABS ---------- */
+  .tabs{display:flex; gap:8px; margin:18px 0 16px; flex-wrap:wrap;}
+  .tab{
+    font-family:'Barlow Condensed',sans-serif;
+    font-weight:700; text-transform:uppercase; letter-spacing:.04em;
+    font-size:14px; padding:10px 20px; border-radius:10px;
+    background:var(--panel); border:1px solid var(--line); color:var(--muted);
+    cursor:pointer; transition:all .15s ease;
+  }
+  .tab.active{
+    background:linear-gradient(135deg,var(--blue) 0%, var(--blue-light) 100%);
+    color:#fff; border-color:transparent;
+    box-shadow:0 4px 18px rgba(46,86,217,0.4);
+  }
+  .tab-add{width:38px;text-align:center;padding:10px 0;color:var(--gold);border-color:rgba(242,183,5,0.3);}
+
+  /* ---------- GROUP CARD ---------- */
+  .group{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:16px;
+    overflow:hidden;
+    margin-bottom:20px;
+    box-shadow:0 20px 40px -20px rgba(0,0,0,0.6);
+  }
+  .group-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 18px; background:var(--panel2);
+    border-bottom:1px solid var(--line);
+  }
+  .group-name{
+    font-family:'Anton',sans-serif; font-weight:400; text-transform:uppercase;
+    font-size:19px; letter-spacing:.02em; color:#fff;
+  }
+  .group-name-edit{
+    background:transparent;border:1px solid var(--line);border-radius:6px;color:#fff;
+    font:inherit;padding:4px 8px;font-family:'Anton',sans-serif;font-size:17px;
+  }
+  .group-head-left{display:flex; flex-direction:column; gap:5px;}
+  .group-date{
+    font-family:'Barlow Condensed',sans-serif; font-size:12.5px; font-weight:700;
+    letter-spacing:.03em; color:var(--gold); display:flex; align-items:center; gap:6px;
+    background:rgba(242,183,5,0.08); border:1px solid rgba(242,183,5,0.25);
+    padding:4px 10px; border-radius:999px; width:fit-content;
+  }
+  .group-date.unset{
+    color:var(--muted); background:rgba(255,255,255,0.04); border-color:var(--line);
+    font-style:italic; font-weight:600;
+  }
+  .group-date-admin{display:flex; align-items:center; gap:6px;}
+  .group-date-admin label{
+    font-family:'Barlow Condensed',sans-serif; font-size:12.5px; font-weight:600;
+    letter-spacing:.03em; color:var(--gold);
+  }
+  .group-date-admin input[type="date"]{
+    background:rgba(255,255,255,0.06); border:1px solid rgba(242,183,5,0.35); border-radius:6px;
+    color:#fff; font:inherit; padding:4px 9px; color-scheme:dark; font-size:12.5px;
+  }
+  .group-head-right{display:flex; align-items:center; gap:8px;}
+
+  table{width:100%; border-collapse:collapse; font-size:13px; user-select:none;}
+  thead th{
+    font-family:'Barlow Condensed',sans-serif; text-transform:uppercase;
+    letter-spacing:.05em; font-weight:600; font-size:11.5px;
+    color:#cfd8f5; background:var(--blue);
+    padding:10px 6px; text-align:center; white-space:nowrap;
+  }
+  thead th.col-tim{text-align:left; padding-left:14px;}
+  tbody td{padding:11px 6px; text-align:center; border-bottom:1px solid var(--line); white-space:nowrap;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:rgba(255,255,255,0.02);}
+  td.col-tim{text-align:left; padding-left:14px; font-weight:700; color:#fff;}
+  td.col-tim .rank-badge{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:22px; height:22px; margin-right:9px;
+    font-family:'Anton',sans-serif; font-size:13px; color:var(--muted);
+  }
+  tr:nth-child(1) td.col-tim .rank-badge{
+    background:var(--gold); color:#1a1400; border-radius:6px;
+  }
+  td.poin{
+    font-family:'Anton',sans-serif; font-size:15px;
+    background:var(--blue-light); color:#fff; border-radius:6px;
+  }
+  td.sg-pos{color:var(--green); font-weight:700;}
+  td.sg-neg{color:var(--red); font-weight:700;}
+  td input.stat{
+    width:38px; background:rgba(255,255,255,0.06); border:1px solid var(--line);
+    color:#fff; text-align:center; border-radius:5px; padding:5px 2px; font:inherit; font-size:13px;
+  }
+  td input.team-name-input{
+    width:100%; background:rgba(255,255,255,0.06); border:1px solid var(--line);
+    color:#fff; border-radius:5px; padding:5px 8px; font:inherit; font-weight:700;
+  }
+  td.rm{cursor:pointer; color:var(--muted);}
+  td.rm:hover{color:var(--red);}
+
+  .group-footer{
+    padding:10px 14px; display:flex; justify-content:space-between; align-items:center;
+    background:var(--panel2); border-top:1px solid var(--line);
+  }
+  .legend{
+    font-size:11px; color:var(--muted); padding:14px 4px 0; line-height:1.9;
+  }
+  .legend b{color:#cbd4ee;}
+  .legend-grid{display:grid; grid-template-columns:1fr 1fr; gap:2px 18px;}
+  @media(min-width:560px){.legend-grid{grid-template-columns:1fr 1fr 1fr 1fr;}}
+
+  .share-box{
+    margin-top:26px; padding:16px 18px; border-radius:14px;
+    background:var(--panel); border:1px dashed rgba(242,183,5,0.35);
+    display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap;
+  }
+  .share-box p{margin:0; font-size:12.5px; color:var(--muted); max-width:480px;}
+  .share-box strong{color:var(--gold);}
+
+  .log-panel{
+    margin-top:20px; background:var(--panel); border:1px solid var(--line);
+    border-radius:14px; overflow:hidden;
+  }
+  .log-header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 18px; cursor:pointer; user-select:none;
+  }
+  .log-header h4{
+    margin:0; font-family:'Anton',sans-serif; font-weight:400; text-transform:uppercase;
+    font-size:14px; letter-spacing:.03em; color:#fff;
+  }
+  .log-chevron{color:var(--muted); font-size:12px; transition:transform .15s ease;}
+  .log-chevron.open{transform:rotate(180deg);}
+  .log-list{
+    max-height:280px; overflow-y:auto; border-top:1px solid var(--line);
+    display:none;
+  }
+  .log-list.open{display:block;}
+  .log-item{
+    padding:10px 18px; border-bottom:1px solid var(--line);
+    font-size:12.5px; display:flex; flex-direction:column; gap:2px;
+  }
+  .log-item:last-child{border-bottom:none;}
+  .log-item .who{color:var(--gold); font-weight:700;}
+  .log-item .when{color:var(--muted); font-size:11px;}
+  .log-empty{padding:16px 18px; color:var(--muted); font-size:12.5px;}
+
+  .modal-bg{
+    position:fixed; inset:0; background:rgba(3,5,12,0.72); backdrop-filter:blur(3px);
+    display:flex; align-items:center; justify-content:center; z-index:50; padding:20px;
+  }
+  .modal{
+    background:var(--panel); border:1px solid var(--line); border-radius:16px;
+    padding:26px; width:100%; max-width:340px; text-align:center;
+  }
+  .modal h3{font-family:'Anton',sans-serif; font-weight:400; margin:0 0 6px; text-transform:uppercase; letter-spacing:.02em;}
+  .modal p{color:var(--muted); font-size:13px; margin:0 0 16px;}
+  .modal input{
+    width:100%; padding:12px; border-radius:8px; border:1px solid var(--line);
+    background:rgba(255,255,255,0.06); color:#fff; font-size:16px; text-align:center;
+    letter-spacing:.3em; margin-bottom:14px;
+  }
+  .modal-actions{display:flex; gap:8px;}
+  .modal-actions .btn{flex:1;}
+  .err{color:var(--red); font-size:12px; min-height:16px; margin-top:-8px; margin-bottom:8px;}
+
+  .empty{padding:40px 18px; text-align:center; color:var(--muted); font-size:13px;}
+  .toast{
+    position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+    background:var(--green); color:#04231a; font-weight:700; font-size:13px;
+    padding:10px 20px; border-radius:999px; z-index:60; opacity:0; pointer-events:none;
+    transition:opacity .25s ease, transform .25s ease;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(-6px);}
+
+  .add-row-btn{
+    width:100%; text-align:center; padding:11px; font-size:12px; color:var(--muted);
+    background:transparent; border:none; border-top:1px dashed var(--line);
+    cursor:pointer; font-family:'Barlow Condensed',sans-serif; text-transform:uppercase; letter-spacing:.06em; font-weight:600;
+  }
+  .add-row-btn:hover{color:var(--gold); background:rgba(242,183,5,0.05);}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="lights" id="lights"></div>
+    <div class="eyebrow">Klasemen Live</div>
+    <h1 class="title" id="titleDisplay">Klasemen Turnamen</h1>
+    <input class="title title-edit" id="titleEdit" style="display:none;" maxlength="60">
+    <div class="subtitle">Diperbarui langsung oleh panitia &mdash; bisa dibagikan ke semua tim</div>
+    <div class="updated"><span class="dot"></span><span id="updatedText">Memuat data…</span></div>
+  </div>
+
+  <div class="adminbar" id="adminBar"></div>
+
+  <div class="tabs" id="tabs"></div>
+  <div id="groupsContainer"></div>
+
+  <div class="legend" id="legendBox">
+    <div class="legend-grid">
+      <div><b>Main</b> : Jumlah pertandingan</div>
+      <div><b>Seri</b> : 1 poin</div>
+      <div><b>GM</b> : Gol memasukkan</div>
+      <div><b>SG</b> : Selisih gol</div>
+      <div><b>Menang</b> : 3 poin</div>
+      <div><b>Kalah</b> : 0 poin</div>
+      <div><b>GK</b> : Gol kemasukan</div>
+      <div><b>Poin</b> : Total poin</div>
+    </div>
+  </div>
+
+  <div class="share-box">
+    <p><strong>Cara membagikan:</strong> bagikan tautan halaman ini ke grup panitia dan pemain. Semua orang melihat klasemen yang sama secara real-time — hanya admin yang bisa mengedit.</p>
+  </div>
+
+  <div id="logPanelContainer"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div id="modalRoot"></div>
+
+<script>
+const STORAGE_KEY = 'klasemen-data';
+let isAdmin = false;
+let adminName = '';
+let adminPin = '';
+let data = null;
+let activeGroupId = null;
+let saveTimer = null;
+let pollTimer = null;
+let logOpen = false;
+
+// ---------- floodlight beams ----------
+(function initLights(){
+  const el = document.getElementById('lights');
+  const positions = [10, 22, 78, 90];
+  positions.forEach((p,i)=>{
+    const b = document.createElement('div');
+    b.className = 'beam';
+    b.style.left = p + '%';
+    b.style.animationDelay = (i*0.6) + 's';
+    b.style.transform = 'rotate(' + (p<50 ? -14 : 14) + 'deg)';
+    el.appendChild(b);
+  });
+})();
+
+function uid(){ return Math.random().toString(36).slice(2,9); }
+
+function defaultData(){
+  return {
+    title: 'Klasemen Turnamen',
+    updatedAt: Date.now(),
+    groups: [
+      {
+        id: uid(), name: 'Grup A', matchDate: '',
+        teams: [
+          { id: uid(), name: 'Sukanagara', main:2, menang:1, seri:1, kalah:0, gm:2, gk:0 },
+          { id: uid(), name: 'Sentul', main:2, menang:1, seri:0, kalah:1, gm:2, gk:2 },
+          { id: uid(), name: 'Sindangrasa', main:1, menang:0, seri:1, kalah:0, gm:0, gk:0 },
+          { id: uid(), name: 'SMP N 5 Padaherang', main:1, menang:0, seri:0, kalah:1, gm:0, gk:2 },
+        ]
+      },
+      {
+        id: uid(), name: 'Grup B', matchDate: '',
+        teams: [
+          { id: uid(), name: 'Sukajadi', main:1, menang:1, seri:0, kalah:0, gm:2, gk:0 },
+          { id: uid(), name: 'Sukasari', main:1, menang:0, seri:0, kalah:1, gm:0, gk:2 },
+          { id: uid(), name: 'Ciledug', main:0, menang:0, seri:0, kalah:0, gm:0, gk:0 },
+        ]
+      }
+    ]
+  };
+}
+
+const API_URL = '/api/klasemen';
+
+async function loadData(){
+  try{
+    const res = await fetch(API_URL);
+    const json = await res.json();
+    if(json && json.value){
+      data = json.value;
+    } else {
+      data = defaultData();
+      await fetch(API_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) });
+    }
+  }catch(e){
+    data = defaultData();
+  }
+  if(!activeGroupId && data.groups.length) activeGroupId = data.groups[0].id;
+  render();
+}
+
+async function persist(showToast){
+  data.updatedAt = Date.now();
+  try{
+    const res = await fetch(API_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json', 'X-Admin-Pin': adminPin},
+      body: JSON.stringify(data)
+    });
+    if(!res.ok){
+      flashToast('Gagal menyimpan — sesi admin tidak valid, coba masuk ulang');
+      return;
+    }
+    if(showToast) flashToast('Perubahan tersimpan');
+  }catch(e){
+    flashToast('Gagal menyimpan, coba lagi');
+  }
+}
+
+function scheduleSave(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(()=>persist(true), 500);
+}
+
+function flashToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 1800);
+}
+
+function timeAgo(ts){
+  const s = Math.floor((Date.now()-ts)/1000);
+  if(s<10) return 'baru saja';
+  if(s<60) return s+' detik lalu';
+  const m = Math.floor(s/60);
+  if(m<60) return m+' menit lalu';
+  const h = Math.floor(m/60);
+  if(h<24) return h+' jam lalu';
+  return new Date(ts).toLocaleDateString('id-ID',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+}
+
+function formatTanggal(iso){
+  if(!iso) return '';
+  try{
+    const d = new Date(iso + 'T00:00:00');
+    return d.toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' });
+  }catch(e){ return ''; }
+}
+
+function logAction(text){
+  if(!data.log) data.log = [];
+  data.log.unshift({ time: Date.now(), admin: adminName || 'Admin', text });
+  if(data.log.length > 50) data.log = data.log.slice(0, 50);
+}
+
+function renderLogPanel(){
+  const container = document.getElementById('logPanelContainer');
+  if(!isAdmin){ container.innerHTML = ''; return; }
+
+  const log = data.log || [];
+  container.innerHTML = '';
+
+  const panel = document.createElement('div');
+  panel.className = 'log-panel';
+
+  const header = document.createElement('div');
+  header.className = 'log-header';
+  header.innerHTML = `<h4>Riwayat Perubahan (${log.length})</h4><span class="log-chevron${logOpen?' open':''}">▾</span>`;
+  header.onclick = ()=>{ logOpen = !logOpen; renderLogPanel(); };
+  panel.appendChild(header);
+
+  const list = document.createElement('div');
+  list.className = 'log-list' + (logOpen ? ' open' : '');
+
+  if(log.length === 0){
+    const empty = document.createElement('div');
+    empty.className = 'log-empty';
+    empty.textContent = 'Belum ada perubahan tercatat.';
+    list.appendChild(empty);
+  } else {
+    log.forEach(entry=>{
+      const item = document.createElement('div');
+      item.className = 'log-item';
+      item.innerHTML = `<div><span class="who">${escapeHtml(entry.admin)}</span> — ${escapeHtml(entry.text)}</div><div class="when">${timeAgo(entry.time)}</div>`;
+      list.appendChild(item);
+    });
+  }
+  panel.appendChild(list);
+  container.appendChild(panel);
+}
+
+function computeRows(teams){
+  const withCalc = teams.map(t=>{
+    const sg = (t.gm||0) - (t.gk||0);
+    const poin = (t.menang||0)*3 + (t.seri||0)*1;
+    return {...t, sg, poin};
+  });
+  withCalc.sort((a,b)=> b.poin-a.poin || b.sg-a.sg || b.gm-a.gm);
+  return withCalc;
+}
+
+// ---------- render ----------
+function render(){
+  const titleEl = document.getElementById('titleDisplay');
+  titleEl.textContent = data.title;
+  titleEl.style.cursor = isAdmin ? 'pointer' : 'default';
+  titleEl.title = isAdmin ? 'Klik untuk edit judul' : '';
+  document.getElementById('titleEdit').value = data.title;
+  document.getElementById('updatedText').textContent = 'Diperbarui ' + timeAgo(data.updatedAt);
+
+  renderAdminBar();
+  renderTabs();
+  renderGroups();
+  renderLogPanel();
+}
+
+function renderAdminBar(){
+  const bar = document.getElementById('adminBar');
+  bar.innerHTML = '';
+  if(isAdmin){
+    const badge = document.createElement('button');
+    badge.className = 'btn btn-red';
+    badge.textContent = 'Keluar Mode Admin';
+    badge.onclick = ()=>{ isAdmin=false; render(); };
+    bar.appendChild(badge);
+  } else {
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-ghost';
+    btn.textContent = 'Masuk sebagai Admin';
+    btn.onclick = openPinModal;
+    bar.appendChild(btn);
+  }
+}
+
+function renderTabs(){
+  const tabs = document.getElementById('tabs');
+  tabs.innerHTML = '';
+  data.groups.forEach(g=>{
+    const t = document.createElement('div');
+    t.className = 'tab' + (g.id===activeGroupId ? ' active' : '');
+    t.textContent = g.name;
+    t.onclick = ()=>{ activeGroupId = g.id; render(); };
+    tabs.appendChild(t);
+  });
+  if(isAdmin){
+    const add = document.createElement('div');
+    add.className = 'tab tab-add';
+    add.textContent = '+';
+    add.title = 'Tambah grup';
+    add.onclick = ()=>{
+      const g = { id: uid(), name: 'Grup ' + String.fromCharCode(65 + data.groups.length), matchDate: '', teams: [] };
+      data.groups.push(g);
+      activeGroupId = g.id;
+      logAction('menambahkan grup "' + g.name + '"');
+      scheduleSave();
+      render();
+    };
+    tabs.appendChild(add);
+  }
+}
+
+function renderGroups(){
+  const container = document.getElementById('groupsContainer');
+  container.innerHTML = '';
+  const group = data.groups.find(g=>g.id===activeGroupId);
+  if(!group){
+    container.innerHTML = '<div class="empty">Belum ada grup. ' + (isAdmin ? 'Klik tombol + di atas untuk menambah grup.' : '') + '</div>';
+    return;
+  }
+
+  const card = document.createElement('div');
+  card.className = 'group';
+
+  // header
+  const head = document.createElement('div');
+  head.className = 'group-head';
+
+  const left = document.createElement('div');
+  left.className = 'group-head-left';
+
+  if(isAdmin){
+    const inp = document.createElement('input');
+    inp.className = 'group-name-edit';
+    inp.value = group.name;
+    inp.addEventListener('focus', ()=>{ inp.dataset.prev = inp.value; });
+    inp.oninput = ()=>{ group.name = inp.value; scheduleSave(); renderTabs(); };
+    inp.addEventListener('blur', ()=>{
+      if(inp.dataset.prev !== undefined && inp.dataset.prev !== inp.value && inp.value.trim()){
+        logAction('mengubah nama grup dari "' + inp.dataset.prev + '" jadi "' + inp.value + '"');
+        scheduleSave();
+      }
+    });
+    left.appendChild(inp);
+
+    const dateRow = document.createElement('div');
+    dateRow.className = 'group-date-admin';
+    const label = document.createElement('label');
+    label.textContent = 'Tanggal:';
+    const dateInp = document.createElement('input');
+    dateInp.type = 'date';
+    dateInp.value = group.matchDate || '';
+    dateInp.addEventListener('change', ()=>{
+      group.matchDate = dateInp.value;
+      logAction('mengubah tanggal "' + group.name + '" jadi ' + (formatTanggal(dateInp.value) || 'kosong'));
+      scheduleSave();
+    });
+    dateRow.appendChild(label);
+    dateRow.appendChild(dateInp);
+    left.appendChild(dateRow);
+  } else {
+    const name = document.createElement('div');
+    name.className = 'group-name';
+    name.textContent = group.name;
+    left.appendChild(name);
+
+    const dateRow = document.createElement('div');
+    if(group.matchDate){
+      dateRow.className = 'group-date';
+      dateRow.textContent = 'Tanggal: ' + formatTanggal(group.matchDate);
+    } else {
+      dateRow.className = 'group-date unset';
+      dateRow.textContent = 'Tanggal: belum diatur';
+    }
+    left.appendChild(dateRow);
+  }
+  head.appendChild(left);
+
+  if(isAdmin){
+    const right = document.createElement('div');
+    right.className = 'group-head-right';
+    const delGroup = document.createElement('button');
+    delGroup.className = 'btn btn-red btn-sm';
+    delGroup.textContent = 'Hapus Grup';
+    delGroup.onclick = ()=>{
+      if(confirm('Hapus grup "'+group.name+'" beserta semua tim di dalamnya?')){
+        logAction('menghapus grup "' + group.name + '"');
+        data.groups = data.groups.filter(g=>g.id!==group.id);
+        activeGroupId = data.groups.length ? data.groups[0].id : null;
+        scheduleSave();
+        render();
+      }
+    };
+    right.appendChild(delGroup);
+    head.appendChild(right);
+  }
+
+  card.appendChild(head);
+
+  // table
+  if(group.teams.length === 0){
+    const empty = document.createElement('div');
+    empty.className = 'empty';
+    empty.textContent = 'Belum ada tim di grup ini.';
+    card.appendChild(empty);
+  } else {
+    const table = document.createElement('table');
+    const rows = computeRows(group.teams);
+    table.innerHTML = `
+      <thead><tr>
+        <th>Pos</th><th class="col-tim">Tim</th><th>Main</th><th>Menang</th><th>Seri</th><th>Kalah</th><th>GM</th><th>GK</th><th>SG</th><th>Poin</th>${isAdmin?'<th></th>':''}
+      </tr></thead>
+      <tbody></tbody>`;
+    const tbody = table.querySelector('tbody');
+
+    rows.forEach((t,idx)=>{
+      const tr = document.createElement('tr');
+
+      const nameCell = isAdmin
+        ? `<input class="team-name-input" data-field="name" data-id="${t.id}" value="${escapeAttr(t.name)}">`
+        : `${escapeHtml(t.name)}`;
+
+      function statCell(field){
+        return isAdmin
+          ? `<input class="stat" type="number" min="0" data-field="${field}" data-id="${t.id}" value="${t[field]||0}">`
+          : `${t[field]||0}`;
+      }
+
+      tr.innerHTML = `
+        <td><span class="rank-badge">${idx+1}</span></td>
+        <td class="col-tim">${nameCell}</td>
+        <td>${statCell('main')}</td>
+        <td>${statCell('menang')}</td>
+        <td>${statCell('seri')}</td>
+        <td>${statCell('kalah')}</td>
+        <td>${statCell('gm')}</td>
+        <td>${statCell('gk')}</td>
+        <td class="${t.sg>0?'sg-pos':t.sg<0?'sg-neg':''}">${t.sg>0?'+':''}${t.sg}</td>
+        <td class="poin">${t.poin}</td>
+        ${isAdmin ? `<td class="rm" data-remove="${t.id}" title="Hapus tim">✕</td>` : ''}
+      `;
+      tbody.appendChild(tr);
+    });
+
+    card.appendChild(table);
+
+    // wire inputs
+    if(isAdmin){
+      const fieldLabels = { main:'Main', menang:'Menang', seri:'Seri', kalah:'Kalah', gm:'GM', gk:'GK' };
+      table.querySelectorAll('input.stat').forEach(inp=>{
+        inp.addEventListener('focus', ()=>{ inp.dataset.prev = inp.value; });
+        inp.addEventListener('input', ()=>{
+          const team = group.teams.find(t=>t.id===inp.dataset.id);
+          team[inp.dataset.field] = Math.max(0, parseInt(inp.value||'0',10));
+          scheduleSave();
+          // live-update poin/sg without full re-render focus loss: simple full render on blur
+        });
+        inp.addEventListener('blur', ()=>{
+          const team = group.teams.find(t=>t.id===inp.dataset.id);
+          if(team && inp.dataset.prev !== undefined && inp.dataset.prev !== inp.value){
+            const label = fieldLabels[inp.dataset.field] || inp.dataset.field;
+            logAction('mengubah ' + label + ' tim "' + team.name + '" dari ' + inp.dataset.prev + ' jadi ' + inp.value);
+            scheduleSave();
+          }
+          render();
+        });
+      });
+      table.querySelectorAll('input.team-name-input').forEach(inp=>{
+        inp.addEventListener('focus', ()=>{ inp.dataset.prev = inp.value; });
+        inp.addEventListener('input', ()=>{
+          const team = group.teams.find(t=>t.id===inp.dataset.id);
+          team.name = inp.value;
+          scheduleSave();
+        });
+        inp.addEventListener('blur', ()=>{
+          if(inp.dataset.prev !== undefined && inp.dataset.prev !== inp.value && inp.value.trim()){
+            logAction('mengubah nama tim dari "' + inp.dataset.prev + '" jadi "' + inp.value + '"');
+            scheduleSave();
+          }
+        });
+      });
+      table.querySelectorAll('[data-remove]').forEach(el=>{
+        el.addEventListener('click', ()=>{
+          const team = group.teams.find(t=>t.id===el.dataset.remove);
+          if(team) logAction('menghapus tim "' + team.name + '" dari grup "' + group.name + '"');
+          group.teams = group.teams.filter(t=>t.id!==el.dataset.remove);
+          scheduleSave();
+          render();
+        });
+      });
+    }
+  }
+
+  if(isAdmin){
+    const addBtn = document.createElement('button');
+    addBtn.className = 'add-row-btn';
+    addBtn.textContent = '+ Tambah Tim';
+    addBtn.onclick = ()=>{
+      group.teams.push({ id: uid(), name: 'Tim Baru', main:0, menang:0, seri:0, kalah:0, gm:0, gk:0 });
+      logAction('menambahkan tim baru ke grup "' + group.name + '"');
+      scheduleSave();
+      render();
+    };
+    card.appendChild(addBtn);
+  }
+
+  container.appendChild(card);
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function escapeAttr(s){ return escapeHtml(s); }
+
+// ---------- title edit ----------
+document.getElementById('titleDisplay').addEventListener('click', ()=>{
+  if(!isAdmin) return;
+  const e = document.getElementById('titleEdit');
+  e.dataset.prev = data.title;
+  document.getElementById('titleDisplay').style.display='none';
+  e.style.display='block';
+  e.focus();
+});
+document.getElementById('titleEdit').addEventListener('input', (ev)=>{
+  data.title = ev.target.value || 'Klasemen Turnamen';
+  document.getElementById('titleDisplay').textContent = data.title;
+  scheduleSave();
+});
+document.getElementById('titleEdit').addEventListener('blur', ()=>{
+  const e = document.getElementById('titleEdit');
+  if(e.dataset.prev !== undefined && e.dataset.prev !== data.title){
+    logAction('mengubah judul dari "' + e.dataset.prev + '" jadi "' + data.title + '"');
+    scheduleSave();
+  }
+  document.getElementById('titleEdit').style.display='none';
+  document.getElementById('titleDisplay').style.display='block';
+});
+
+// ---------- pin modal ----------
+function openPinModal(){
+  const root = document.getElementById('modalRoot');
+  root.innerHTML = `
+    <div class="modal-bg" id="modalBg">
+      <div class="modal">
+        <h3>Mode Admin</h3>
+        <p>Isi nama kamu dan PIN panitia. Nama dipakai supaya tiap perubahan tercatat di riwayat.</p>
+        <input id="nameInput" type="text" placeholder="Nama kamu (misal: Budi)" autocomplete="off" style="margin-bottom:10px;">
+        <input id="pinInput" type="password" inputmode="numeric" placeholder="PIN" autocomplete="off">
+        <div class="err" id="pinErr"></div>
+        <div class="modal-actions">
+          <button class="btn btn-ghost" id="pinCancel">Batal</button>
+          <button class="btn btn-gold" id="pinSubmit">Masuk</button>
+        </div>
+      </div>
+    </div>`;
+  const bg = document.getElementById('modalBg');
+  const nameInput = document.getElementById('nameInput');
+  const input = document.getElementById('pinInput');
+  nameInput.focus();
+  document.getElementById('pinCancel').onclick = ()=> root.innerHTML='';
+  bg.addEventListener('click', (e)=>{ if(e.target===bg) root.innerHTML=''; });
+  async function submit(){
+    const nameVal = nameInput.value.trim();
+    if(!nameVal){
+      document.getElementById('pinErr').textContent = 'Nama wajib diisi dulu.';
+      nameInput.focus();
+      return;
+    }
+    const pinVal = input.value;
+    const btn = document.getElementById('pinSubmit');
+    btn.disabled = true;
+    btn.textContent = 'Memeriksa...';
+    document.getElementById('pinErr').textContent = '';
+    try{
+      const res = await fetch('/api/verify-pin', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ pin: pinVal })
+      });
+      const json = await res.json();
+      if(json && json.ok){
+        isAdmin = true;
+        adminName = nameVal;
+        adminPin = pinVal;
+        root.innerHTML = '';
+        render();
+        flashToast('Mode admin aktif — masuk sebagai ' + nameVal);
+      } else {
+        document.getElementById('pinErr').textContent = 'PIN salah, coba lagi.';
+        btn.disabled = false;
+        btn.textContent = 'Masuk';
+      }
+    }catch(e){
+      document.getElementById('pinErr').textContent = 'Gagal memeriksa PIN. Cek koneksi lalu coba lagi.';
+      btn.disabled = false;
+      btn.textContent = 'Masuk';
+    }
+  }
+  document.getElementById('pinSubmit').onclick = submit;
+  input.addEventListener('keydown', (e)=>{ if(e.key==='Enter') submit(); });
+  nameInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter') input.focus(); });
+}
+
+// ---------- polling for live updates (viewers) ----------
+function startPolling(){
+  clearInterval(pollTimer);
+  pollTimer = setInterval(async ()=>{
+    if(isAdmin) return; // don't clobber active edits
+    try{
+      const res = await fetch(API_URL);
+      const json = await res.json();
+      if(json && json.value){
+        const fresh = json.value;
+        if(fresh.updatedAt !== data.updatedAt){
+          data = fresh;
+          render();
+        } else {
+          document.getElementById('updatedText').textContent = 'Diperbarui ' + timeAgo(data.updatedAt);
+        }
+      }
+    }catch(e){}
+  }, 6000);
+}
+
+loadData().then(startPolling);
+</script>
+</body>
+</html>
